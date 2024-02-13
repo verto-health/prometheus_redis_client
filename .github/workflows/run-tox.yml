@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Run Tox
 
 on:
   push:
@@ -12,8 +12,21 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:5
+        ports:
+          - 6379:6379
 
     steps:
-    - uses: actions/checkout@v3
-    - name: run docker-compose file
-      run: docker-compose -f test-docker-compose.yml up --build
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install tox tox-gh-actions
+      - name: Test with tox
+        run: tox -e py39
